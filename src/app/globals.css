@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  color: theme("colors.text-default");
+  background: theme("colors.background");
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
