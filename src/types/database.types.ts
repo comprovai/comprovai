@@ -432,22 +432,31 @@ export type Database = {
           cnpj: string | null
           criado_em: string
           dominio_email: string
+          endereco: string | null
           id: string
+          logo_url: string | null
           nome: string
+          telefone: string | null
         }
         Insert: {
           cnpj?: string | null
           criado_em?: string
           dominio_email: string
+          endereco?: string | null
           id?: string
+          logo_url?: string | null
           nome: string
+          telefone?: string | null
         }
         Update: {
           cnpj?: string | null
           criado_em?: string
           dominio_email?: string
+          endereco?: string | null
           id?: string
+          logo_url?: string | null
           nome?: string
+          telefone?: string | null
         }
         Relationships: []
       }
