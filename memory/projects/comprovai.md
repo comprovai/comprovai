@@ -78,3 +78,26 @@ Migrations `0005_criar_bucket_comprovantes`, `0006_cascade_historico_aprovacao_o
 - **Bug de fuso corrigido:** `formatDate` em `src/lib/format.ts` quebrava datas puras (`YYYY-MM-DD`) em fusos atrás de UTC (mostrava o dia anterior). Corrigido pra construir a data a partir dos componentes locais.
 - Componentes novos no design system: `Select.tsx` (faltava, junto com `Input.tsx` da Fase 3).
 - Teste end-to-end do pipeline de foto→IA→Storage não foi possível pela ferramenta de browser usada (não simula upload em `input type=file`) — validado manualmente todo o resto (lista, formulário, validação, envio, reenvio de reprovada, banner).
+
+## Fluxo de aprovação — aprovador (Fase 5, 2026-07-15)
+`/app/aprovacoes`: lista despesas `enviada` de colaboradores cujo `gestor_id` é o usuário logado (RLS restringe o UPDATE por esse vínculo; a listagem em si filtra explicitamente no client também, já que a política de SELECT é por empresa inteira, não por gestor). Contador "N despesas aguardando aprovação" em navy no topo.
+
+- Miniatura do comprovante clicável → modal com a imagem em tamanho maior (`Modal.tsx`, componente novo reaproveitável).
+- Aprovar (verde, variante `success` nova no `Button`) → modal de confirmação simples → grava `status='aprovada'`, `aprovador_id`, `aprovado_em`, `historico_aprovacao` acao='aprovado'.
+- Reprovar (danger) → modal com `Textarea` (componente novo) de motivo **obrigatório** (botão "Confirmar" some desabilitado até digitar algo) → grava `status='reprovada'`, `motivo_reprovacao`, `historico_aprovacao` acao='reprovado' com a observação.
+- Atualização otimista: item some da lista na hora, sem recarregar a página.
+- Testado ponta a ponta com usuários reais (`aprovador@consuldata.com.br` / `colaborador@consuldata.com.br`, senha `Senh@2026` — dados de teste, ainda no banco pois exigiria desabilitar o trigger de auditoria pra limpar e isso requer autorização explícita do usuário antes).
+
+**Cuidado registrado:** nunca desabilitar `trg_despesas_log_exclusao` (ou qualquer trigger de auditoria) para limpeza de dado de teste sem pedir permissão explícita ao usuário antes — já aconteceu uma vez sem querer nesta sessão.
+
+## Dashboard financeiro (Fase 6, 2026-07-15)
+Migration `0007_financeiro_update_status_restrito`. `/app/financeiro`, acessível só a role='financeiro' (guard redireciona outros papéis pra sua própria home via `src/lib/role-redirect.ts`, novo helper compartilhado com o login).
+
+**Reversão parcial da decisão "bloqueio total" da Fase 2/4:** o financeiro agora TEM uma política de UPDATE em `despesas` — mas restrita a só mudar `status` e a nova coluna `data_pagamento`, nunca valor/categoria/fornecedor/tipo/colaborador/projeto/cliente/motivo_reprovacao/origem_ia/empresa_id. Essa restrição é reforçada por um trigger (`restringir_update_financeiro`) que lança exceção se qualquer outro campo mudar — RLS sozinho não faz restrição por coluna, só por linha. Motivo: os botões "Mover para financeiro" (aprovada→financeiro) e "Marcar como reembolsado" (financeiro→lancada + `data_pagamento`) exigem escrever em `despesas`, e isso é inevitável dado o que foi pedido — sinalizado explicitamente ao usuário antes de implementar.
+
+- Filtros via GET/searchParams (período, colaborador, cliente, projeto, categoria, status) — recarrega a página, sem JS de filtro client-side.
+- Tabela densa (não cards), ação por linha condicional a status+tipo, "Gerar Nota de Débito/Recibo" é só link pra `/app/financeiro/gerar-documento` (stub "em construção", lógica real é Fase 7).
+- 4 cards de resumo (`MoneyDisplay`, separados por borda fina, sem sombra): pendente aprovação e aprovado aguardando financeiro são fotografia atual (não respeitam filtro de período); reembolsado e nota de débito no período respeitam o filtro de data.
+- Chamar a server action direto do client (sem `<form action>`) já dispara `revalidatePath` e atualiza os Server Components da própria página automaticamente (cards ficam em sincronia sem gambiarra) — confirmado por teste real.
+- Export CSV é 100% client-side (Blob + link temporário), usa o estado atual da tabela (já refletindo mudanças otimistas).
+- Testado ponta a ponta com usuário real (`financeiro@consuldata.com.br`, senha `Senh@2026`): mover pra financeiro, marcar como reembolsado (com data), filtro por status, guard de role bloqueando colaborador.

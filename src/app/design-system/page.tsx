@@ -46,7 +46,7 @@ export default function DesignSystemPage() {
 
         <Section icon={MousePointerClick} title="Button">
           <div className="flex flex-wrap gap-4">
-            <Button variant="primary">Aprovar</Button>
+            <Button variant="success">Aprovar</Button>
             <Button variant="secondary">Salvar rascunho</Button>
             <Button variant="danger">Reprovar</Button>
             <Button variant="primary" disabled>

@@ -2,17 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ROLE_HOME } from "@/lib/role-redirect";
 
 export interface LoginState {
   error?: string;
 }
-
-const ROLE_REDIRECT: Record<string, string> = {
-  colaborador: "/app/minhas-despesas",
-  aprovador: "/app/aprovacoes",
-  financeiro: "/app/financeiro",
-  admin: "/app/admin",
-};
 
 export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "");
@@ -32,7 +26,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
     .eq("id", data.user.id)
     .single();
 
-  const destino = usuario?.role ? ROLE_REDIRECT[usuario.role] : undefined;
+  const destino = usuario?.role ? ROLE_HOME[usuario.role] : undefined;
 
   redirect(destino ?? "/login");
 }

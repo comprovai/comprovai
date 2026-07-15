@@ -151,6 +151,7 @@ export type Database = {
           criado_em: string
           criado_offline: boolean
           data_despesa: string
+          data_pagamento: string | null
           empresa_id: string
           fornecedor: string | null
           id: string
@@ -173,6 +174,7 @@ export type Database = {
           criado_em?: string
           criado_offline?: boolean
           data_despesa: string
+          data_pagamento?: string | null
           empresa_id: string
           fornecedor?: string | null
           id?: string
@@ -195,6 +197,7 @@ export type Database = {
           criado_em?: string
           criado_offline?: boolean
           data_despesa?: string
+          data_pagamento?: string | null
           empresa_id?: string
           fornecedor?: string | null
           id?: string
