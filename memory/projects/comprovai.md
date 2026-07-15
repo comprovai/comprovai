@@ -58,3 +58,11 @@ Regras de UPDATE/DELETE em despesas (decididas em 2026-07-15):
 - Toda exclusão gera log automático (trigger) na tabela `despesas_exclusoes` — imutável, sem FK para despesas (para sobreviver à exclusão), sem política de INSERT direto (só o trigger, via security definer, consegue gravar).
 
 **Pendência para Fase 3:** a UI de exclusão de despesa deve usar um modal de confirmação Sim/Não do próprio design system — nunca `window.confirm()`/`window.alert()` do navegador. Ver [[TASKS]].
+
+## Autenticação (Fase 3, 2026-07-15)
+Supabase Auth (e-mail+senha, sem magic link/OAuth), via `@supabase/ssr`. `src/middleware.ts` protege `/app/*`. Login redireciona por role: colaborador→`/app/minhas-despesas`, aprovador→`/app/aprovacoes`, financeiro→`/app/financeiro`, admin→`/app/admin`. Sidebar navy (#212771) com item ativo marcado por barra lateral laranja de 3px (sem highlight de fundo). "Esqueci minha senha" ainda desabilitado (tooltip "fale com o administrador") — sem fluxo de reset implementado ainda.
+
+**Usuário de teste (uso geral, testar tudo):**
+- E-mail: `compras@consuldata.com.br` / senha: `Senh@2026`
+- role: `admin`, empresa: Consuldata Teleprocessamento (`c25f513c-5929-46d0-8cde-6cda0a21f1e6`)
+- Criado direto via Supabase Admin API (não pela UI, que ainda não existe pra provisionar usuários)
