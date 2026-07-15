@@ -5,7 +5,15 @@ import { ReceiptCard } from "@/components/ui/ReceiptCard";
 import { StatusStamp } from "@/components/ui/StatusStamp";
 import type { ExpenseStatus } from "@/types/expense";
 
-const statuses: ExpenseStatus[] = ["aprovado", "reprovado", "pendente", "financeiro"];
+const statuses: ExpenseStatus[] = [
+  "rascunho",
+  "enviada",
+  "aprovada",
+  "reprovada",
+  "financeiro",
+  "lancada",
+  "nota_gerada",
+];
 
 function Section({
   icon: Icon,
@@ -70,21 +78,21 @@ export default function DesignSystemPage() {
               categoria="Transporte"
               data="2026-07-10"
               fornecedor="Uber"
-              status="aprovado"
+              status="aprovada"
             />
             <ReceiptCard
               valor={128.0}
               categoria="Alimentação"
               data="2026-07-12"
               fornecedor="Restaurante Sabor & Cia"
-              status="pendente"
+              status="enviada"
             />
             <ReceiptCard
               valor={980.0}
               categoria="Hospedagem"
               data="2026-07-08"
               fornecedor="Hotel Atlântico"
-              status="reprovado"
+              status="reprovada"
             />
             <ReceiptCard
               valor={310.5}

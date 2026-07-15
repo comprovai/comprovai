@@ -1,4 +1,11 @@
-export type ExpenseStatus = "aprovado" | "reprovado" | "pendente" | "financeiro";
+export type ExpenseStatus =
+  | "rascunho"
+  | "enviada"
+  | "aprovada"
+  | "reprovada"
+  | "financeiro"
+  | "lancada"
+  | "nota_gerada";
 
 export interface Expense {
   id: string;

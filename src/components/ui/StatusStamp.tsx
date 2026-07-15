@@ -7,10 +7,13 @@ interface StatusStampProps {
 }
 
 const stampConfig: Record<ExpenseStatus, { label: string; colorClass: string }> = {
-  aprovado: { label: "Aprovado", colorClass: "text-success border-success" },
-  reprovado: { label: "Reprovado", colorClass: "text-danger border-danger" },
-  pendente: { label: "Pendente", colorClass: "text-brand border-brand" },
+  rascunho: { label: "Rascunho", colorClass: "text-text-subtle border-text-subtle" },
+  enviada: { label: "Enviada", colorClass: "text-brand border-brand" },
+  aprovada: { label: "Aprovada", colorClass: "text-success border-success" },
+  reprovada: { label: "Reprovada", colorClass: "text-danger border-danger" },
   financeiro: { label: "Em financeiro", colorClass: "text-primary border-primary" },
+  lancada: { label: "Lançada", colorClass: "text-primary border-primary" },
+  nota_gerada: { label: "Nota gerada", colorClass: "text-success border-success" },
 };
 
 export function StatusStamp({ status, className }: StatusStampProps) {

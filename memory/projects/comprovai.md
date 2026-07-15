@@ -66,3 +66,15 @@ Supabase Auth (e-mail+senha, sem magic link/OAuth), via `@supabase/ssr`. `src/mi
 - E-mail: `compras@consuldata.com.br` / senha: `Senh@2026`
 - role: `admin`, empresa: Consuldata Teleprocessamento (`c25f513c-5929-46d0-8cde-6cda0a21f1e6`)
 - Criado direto via Supabase Admin API (não pela UI, que ainda não existe pra provisionar usuários)
+
+## Lançamento de despesa — colaborador (Fase 4, 2026-07-15)
+Migrations `0005_criar_bucket_comprovantes`, `0006_cascade_historico_aprovacao_on_despesa_delete`.
+
+- **Fluxo:** `/app/minhas-despesas` (lista agrupada por status via StatusStamp + FAB laranja quadrado, não circular) → `/app/minhas-despesas/nova` (formulário de 1 tela) → `/app/minhas-despesas/[id]` reaproveita o mesmo `DespesaForm` pra editar reprovada (banner vermelho com `motivo_reprovacao`).
+- **ExpenseStatus/StatusStamp foram realinhados** com os 7 status reais de `despesas` (rascunho/enviada/aprovada/reprovada/financeiro/lancada/nota_gerada) — o enum antigo da Fase 1 (aprovado/reprovado/pendente/financeiro) era só mock e não batia com o schema real.
+- **IA:** rota `/api/extrair-comprovante` usa `@anthropic-ai/sdk` (tool-use forçado pra JSON estrito) com modelo `claude-sonnet-5`. Upload da foto pro bucket privado `comprovantes` (Storage) acontece na mesma rota, via `src/lib/supabase/admin.ts` (service_role — bypassa RLS, único jeito de gravar no bucket já que não há política de client pra ele). `origem_ia` (jsonb) grava o JSON bruto da IA mesmo que o colaborador corrija os campos depois. `cnpj_fornecedor` é extraído mas só fica em `origem_ia` — não virou coluna própria (não estava na lista de campos do formulário pedida).
+- **Bug corrigido:** política `despesas_insert_colaborador` só permite INSERT com status `rascunho`/`reprovada` — então "Enviar para aprovação" numa despesa NOVA precisa ser INSERT (rascunho) + UPDATE (enviada) em dois passos, nunca um INSERT direto com status='enviada'. `salvarDespesa` (`src/app/app/minhas-despesas/actions.ts`) já faz isso certo.
+- **Bug de arquitetura corrigido (0006):** `historico_aprovacao.despesa_id` não tinha `on delete cascade` — como toda submissão grava uma linha lá, isso bloqueava qualquer exclusão de despesa (mesmo dentro da janela permitida pela política de DELETE). Corrigido pra cascade; a exclusão em si continua permanentemente logada em `despesas_exclusoes` (que não tem FK pra despesas, de propósito, pra sobreviver).
+- **Bug de fuso corrigido:** `formatDate` em `src/lib/format.ts` quebrava datas puras (`YYYY-MM-DD`) em fusos atrás de UTC (mostrava o dia anterior). Corrigido pra construir a data a partir dos componentes locais.
+- Componentes novos no design system: `Select.tsx` (faltava, junto com `Input.tsx` da Fase 3).
+- Teste end-to-end do pipeline de foto→IA→Storage não foi possível pela ferramenta de browser usada (não simula upload em `input type=file`) — validado manualmente todo o resto (lista, formulário, validação, envio, reenvio de reprovada, banner).
