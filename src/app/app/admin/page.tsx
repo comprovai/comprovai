@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default function AdminPage() {
-  return <h1 className="text-lg font-bold text-brand">Admin</h1>;
+  redirect("/app/admin/usuarios");
 }

@@ -7,7 +7,12 @@ const NAV_BY_ROLE: Record<string, { href: string; label: string }[]> = {
   colaborador: [{ href: "/app/minhas-despesas", label: "Minhas despesas" }],
   aprovador: [{ href: "/app/aprovacoes", label: "Aprovações" }],
   financeiro: [{ href: "/app/financeiro", label: "Financeiro" }],
-  admin: [{ href: "/app/admin", label: "Admin" }],
+  admin: [
+    { href: "/app/admin/usuarios", label: "Usuários" },
+    { href: "/app/admin/clientes", label: "Clientes e Projetos" },
+    { href: "/app/admin/categorias", label: "Categorias" },
+    { href: "/app/admin/empresa", label: "Empresa" },
+  ],
 };
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
