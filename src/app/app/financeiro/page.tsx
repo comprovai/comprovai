@@ -141,12 +141,20 @@ export default async function FinanceiroPage({ searchParams }: FinanceiroPagePro
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-lg font-bold text-brand">Financeiro</h1>
-        <Link
-          href="/app/financeiro/gerar-documento"
-          className="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand/5"
-        >
-          Gerar Nota de Débito / Recibo de Reembolso
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/app/financeiro/gerar-documento"
+            className="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand/5"
+          >
+            Gerar Nota de Débito
+          </Link>
+          <Link
+            href="/app/financeiro/gerar-recibo"
+            className="rounded border border-brand px-4 py-2 text-sm font-bold text-brand hover:bg-brand/5"
+          >
+            Gerar Recibo de Reembolso
+          </Link>
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap divide-x divide-border-default rounded border border-border-default bg-surface">

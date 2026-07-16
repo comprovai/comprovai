@@ -4,7 +4,10 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { logout } from "./actions";
 
 const NAV_BY_ROLE: Record<string, { href: string; label: string }[]> = {
-  colaborador: [{ href: "/app/minhas-despesas", label: "Minhas despesas" }],
+  colaborador: [
+    { href: "/app/minhas-despesas", label: "Minhas despesas" },
+    { href: "/app/minhas-despesas/recibos", label: "Recibos" },
+  ],
   aprovador: [{ href: "/app/aprovacoes", label: "Aprovações" }],
   financeiro: [{ href: "/app/financeiro", label: "Financeiro" }],
   admin: [
