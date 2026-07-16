@@ -99,15 +99,20 @@ export async function gerarNotaDebito(
   const valorTotal = despesas.reduce((total, d) => total + d.valor, 0);
 
   const anoAtual = new Date().getFullYear();
-  const { count } = await admin
-    .from("documentos_gerados")
-    .select("id", { count: "exact", head: true })
-    .eq("empresa_id", usuario.empresa_id)
-    .eq("tipo_documento", "nota_debito")
-    .gte("data_emissao", `${anoAtual}-01-01`)
-    .lte("data_emissao", `${anoAtual}-12-31`);
+  const { data: proximoNumero, error: numeroError } = await admin.rpc(
+    "proximo_numero_documento",
+    {
+      p_empresa_id: usuario.empresa_id,
+      p_tipo_documento: "nota_debito",
+      p_ano: anoAtual,
+    }
+  );
 
-  const numero = `${(count ?? 0) + 1}/${anoAtual}`;
+  if (numeroError || proximoNumero == null) {
+    return { error: "Não foi possível gerar o número do documento." };
+  }
+
+  const numero = `${proximoNumero}/${anoAtual}`;
   const dataEmissao = new Date().toISOString().slice(0, 10);
 
   const pdfBuffer = await renderToBuffer(

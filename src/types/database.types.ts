@@ -427,6 +427,35 @@ export type Database = {
           },
         ]
       }
+      documentos_numeracao: {
+        Row: {
+          ano: number
+          empresa_id: string
+          tipo_documento: string
+          ultimo_numero: number
+        }
+        Insert: {
+          ano: number
+          empresa_id: string
+          tipo_documento: string
+          ultimo_numero?: number
+        }
+        Update: {
+          ano?: number
+          empresa_id?: string
+          tipo_documento?: string
+          ultimo_numero?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_numeracao_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           cnpj: string | null
@@ -599,6 +628,10 @@ export type Database = {
     Functions: {
       get_my_empresa_id: { Args: never; Returns: string }
       get_my_role: { Args: never; Returns: string }
+      proximo_numero_documento: {
+        Args: { p_ano: number; p_empresa_id: string; p_tipo_documento: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
