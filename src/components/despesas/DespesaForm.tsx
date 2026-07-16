@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertTriangle, Camera } from "lucide-react";
+import { AlertTriangle, Camera, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { salvarDespesa } from "@/app/app/minhas-despesas/actions";
+import { useOnlineStatus } from "@/lib/useOnlineStatus";
+import { offlineDb } from "@/lib/offline-db";
 import type { Json } from "@/types/database.types";
 
 type Tipo = "reembolso" | "nota_debito" | "ambos";
@@ -52,6 +54,9 @@ interface Extracao {
 }
 
 export function DespesaForm({ categorias, projetos, despesaExistente }: DespesaFormProps) {
+  const online = useOnlineStatus();
+  const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [salvoOffline, setSalvoOffline] = useState(false);
   const [fotoPreviewUrl, setFotoPreviewUrl] = useState<string | null>(
     despesaExistente?.comprovanteUrl ?? null
   );
@@ -90,8 +95,16 @@ export function DespesaForm({ categorias, projetos, despesaExistente }: DespesaF
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setFotoFile(file);
     setFotoPreviewUrl(URL.createObjectURL(file));
     setUploadError(null);
+
+    if (!online) {
+      // Sem conexão: não dá pra chamar a IA nem subir a foto agora. Ela fica
+      // anexada localmente e é enviada junto quando a sincronização rodar.
+      return;
+    }
+
     setExtracting(true);
 
     try {
@@ -134,6 +147,25 @@ export function DespesaForm({ categorias, projetos, despesaExistente }: DespesaF
     setPending(true);
     setServerError(null);
 
+    if (!online && !despesaExistente) {
+      await offlineDb.despesasPendentes.add({
+        valor: valor.trim() === "" ? 0 : valorNumero,
+        dataDespesa: dataDespesa || new Date().toISOString().slice(0, 10),
+        categoriaId,
+        fornecedor,
+        projetoId: projetoId || null,
+        clienteId,
+        tipo,
+        enviar,
+        fotoBlob: fotoFile,
+        fotoNome: fotoFile?.name ?? "comprovante.jpg",
+        criadoEm: new Date().toISOString(),
+      });
+      setPending(false);
+      setSalvoOffline(true);
+      return;
+    }
+
     const result = await salvarDespesa({
       despesaId: despesaExistente?.id,
       valor: valor.trim() === "" ? 0 : valorNumero,
@@ -154,8 +186,34 @@ export function DespesaForm({ categorias, projetos, despesaExistente }: DespesaF
     }
   }
 
+  const bloqueadoOffline = !online && !!despesaExistente;
+
+  if (salvoOffline) {
+    return (
+      <div className="mx-auto max-w-lg rounded border border-brand bg-brand/10 p-6">
+        <p className="text-sm font-bold text-brand">
+          Despesa salva neste dispositivo, sem conexão.
+        </p>
+        <p className="mt-1 text-sm text-brand">
+          Ela será enviada automaticamente assim que a internet voltar — não precisa fazer nada.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-5">
+      {!online && (
+        <div className="flex items-center gap-3 rounded border border-primary bg-primary/10 p-4">
+          <WifiOff size={20} strokeWidth={1.5} className="shrink-0 text-primary" />
+          <p className="text-sm text-primary">
+            {bloqueadoOffline
+              ? "Sem conexão — edições ficam disponíveis quando a internet voltar."
+              : "Sem conexão — preencha os dados manualmente. O comprovante será enviado quando a internet voltar."}
+          </p>
+        </div>
+      )}
+
       {despesaExistente?.motivoReprovacao && (
         <div className="flex items-start gap-3 rounded border border-danger bg-danger/10 p-4">
           <AlertTriangle size={20} strokeWidth={1.5} className="mt-0.5 shrink-0 text-danger" />
@@ -294,7 +352,7 @@ export function DespesaForm({ categorias, projetos, despesaExistente }: DespesaF
           type="button"
           variant="secondary"
           className="flex-1"
-          disabled={pending}
+          disabled={pending || bloqueadoOffline}
           onClick={() => submeter(false)}
         >
           Salvar rascunho
@@ -303,7 +361,7 @@ export function DespesaForm({ categorias, projetos, despesaExistente }: DespesaF
           type="button"
           variant="primary"
           className="flex-1"
-          disabled={pending || !podeEnviar}
+          disabled={pending || !podeEnviar || bloqueadoOffline}
           onClick={() => submeter(true)}
         >
           Enviar para aprovação

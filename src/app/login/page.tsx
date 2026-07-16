@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -44,12 +45,12 @@ export default function LoginPage() {
 
           <SubmitButton />
 
-          <span
-            title="Fale com o administrador"
-            className="cursor-not-allowed text-center text-xs text-text-subtle underline decoration-dotted"
+          <Link
+            href="/esqueci-senha"
+            className="text-center text-xs text-brand underline"
           >
             Esqueci minha senha
-          </span>
+          </Link>
         </form>
       </div>
     </main>

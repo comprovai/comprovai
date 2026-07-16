@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ReceiptCard } from "@/components/ui/ReceiptCard";
 import { StatusStamp } from "@/components/ui/StatusStamp";
+import { SincronizarPendentes } from "@/components/despesas/SincronizarPendentes";
 import type { ExpenseStatus } from "@/types/expense";
 
 const ORDEM_STATUS: ExpenseStatus[] = [
@@ -46,6 +47,8 @@ export default async function MinhasDespesasPage() {
   return (
     <div className="pb-24">
       <h1 className="mb-6 text-lg font-bold text-brand">Minhas despesas</h1>
+
+      <SincronizarPendentes />
 
       {!temDespesas && (
         <p className="text-sm text-text-subtle">

@@ -127,9 +127,28 @@ Template recebido do usuário. Fluxo em duas etapas (diferente da Nota de Débit
 ## Painel de Admin (Fase 8, 2026-07-15)
 `/app/admin/*`, guard próprio em `src/app/app/admin/layout.tsx` (só role='admin', redireciona outros pra sua home via `ROLE_HOME`). Sidebar do admin agora tem 4 itens (Usuários, Clientes e Projetos, Categorias, Empresa) em vez de um só "Admin" genérico.
 
-- **Usuários** (`/app/admin/usuarios`): cria usuário de verdade — `auth.admin.createUser` (service_role) pra criar o login, depois insert normal em `usuarios` (respeita a RLS admin já existente da Fase 2). Admin define a senha inicial diretamente (não tem convite por e-mail, mesmo padrão manual usado o jogo inteiro). Edição inline por linha (role, gestor_id, ativo) e reset de senha por linha (`auth.admin.updateUserById`) — é o workaround real pro "esqueci minha senha" que está desabilitado no login.
+- **Usuários** (`/app/admin/usuarios`): cria usuário de verdade — `auth.admin.createUser` (service_role) pra criar o login, depois insert normal em `usuarios` (respeita a RLS admin já existente da Fase 2). Admin define a senha inicial diretamente (não tem convite por e-mail, mesmo padrão manual usado o jogo inteiro). Edição inline por linha (role, gestor_id, ativo) e reset de senha por linha (`auth.admin.updateUserById`) — era o único workaround pro "esqueci minha senha" antes do self-service (ver Fase 9 abaixo); continua útil pra admin resetar sem depender do e-mail do usuário.
 - **Clientes e Projetos** (`/app/admin/clientes`): dois CRUDs simples (clientes: nome/cnpj; projetos: nome/código/cliente/ativo), edição inline por linha.
 - **Categorias** (`/app/admin/categorias`): nome + limite_valor opcional, edição inline.
 - **Empresa** (`/app/admin/empresa`): edita `empresas` (nome/cnpj/endereco/telefone/logo_url) e faz upsert manual em `dados_bancarios_empresa` (não tem constraint unique em empresa_id, então a action confere se já existe linha antes de decidir update vs insert).
 - Nenhuma RLS nova foi necessária — as políticas de admin já cobriam tudo (usuarios_insert_admin, usuarios_update_self_or_admin, empresas_update_admin, e as políticas genéricas company-wide de clientes/projetos/categorias/dados_bancarios da Fase 2).
 - Testado ponta a ponta com usuário real: criou um usuário colaborador pelo painel e conseguiu logar com ele imediatamente (confirma que o fluxo auth.admin.createUser + insert perfil funciona de ponta a ponta); guard de role bloqueou o colaborador de acessar `/app/admin/*`; criou cliente novo e viu aparecer no select de projetos na hora.
+
+## Esqueci minha senha + Offline (Fase 9, 2026-07-16)
+Decisões do usuário: reset de senha via **e-mail embutido do Supabase** (sem SMTP próprio — aceitável pro volume do piloto); offline **opção 2** — sem conexão, colaborador sobe a foto, é avisado, preenche manual, sincroniza depois.
+
+**Reset de senha:**
+- Link "Esqueci minha senha" no login (antes desabilitado) agora vai pra `/esqueci-senha` → `supabase.auth.resetPasswordForEmail()` client-side (não expõe se o e-mail existe, mesma postura do erro de login).
+- `/auth/callback` (Route Handler) troca o `code` da URL por sessão via `exchangeCodeForSession` e redireciona pra `/redefinir-senha`.
+- `/redefinir-senha` checa se existe sessão válida antes de mostrar o form; sem sessão (link inválido/expirado ou usuário nunca clicou no e-mail) mostra erro claro. Testado os dois casos: com sessão ativa mostra o form, sem sessão mostra "link inválido ou expirado".
+- Não dá pra confirmar recebimento real do e-mail neste ambiente (sem acesso a caixa de entrada) — só confirmei que a chamada ao Supabase não retorna erro.
+
+**Offline (Dexie.js):**
+- `src/lib/offline-db.ts` — banco IndexedDB (`comprovai-offline`) com uma tabela `despesasPendentes` guardando os campos do formulário + a foto como `Blob`.
+- `useOnlineStatus` hook (`navigator.onLine` + eventos `online`/`offline`).
+- `DespesaForm`: se offline, pula a chamada `/api/extrair-comprovante` (não adianta, sem rede) e mostra banner avisando; ao salvar, grava no Dexie em vez de chamar o servidor. Edição de despesa reprovada (`despesaExistente` existe) fica bloqueada offline — só criação nova funciona offline, por decisão de escopo.
+- `/api/upload-comprovante` — rota nova, sobe a foto sem chamar a Claude (usada só na sincronização, já que a extração por IA não rodou no momento da criação offline).
+- `salvarDespesa` ganhou `criadoOffline` (grava `despesas.criado_offline`, coluna que já existia desde a Fase 2) e `skipRedirect` (pra rodar em background sem navegar a página).
+- `SincronizarPendentes` (montado em `/app/minhas-despesas`): ao detectar conexão, sobe cada pendência (foto + dados) e cria a despesa de verdade.
+- **Bug real encontrado e corrigido durante o teste:** o efeito de sincronização rodava em duplicidade (Strict Mode do React re-invoca efeitos em dev) e criava a MESMA despesa duas vezes no Supabase. Corrigido com um lock em nível de módulo (`sincronizacaoEmAndamento`, fora do componente — sobrevive à dupla invocação) + reivindicação do registro do Dexie (delete-then-process, com re-inserção em caso de falha) antes de processar.
+- Testado ponta a ponta de verdade (offline simulado via `Object.defineProperty(navigator, 'onLine', ...)` + eventos, já que a ferramenta de browser não tem toggle real de rede): criou despesa offline → confirmou no IndexedDB → voltou "online" → confirmou 1 único registro no Supabase (não duplicado, após o fix) → confirmou IndexedDB limpo depois da sincronização.

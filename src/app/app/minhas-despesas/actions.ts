@@ -18,6 +18,9 @@ export interface SalvarDespesaInput {
   comprovantePath?: string | null;
   extracaoIa?: Json | null;
   enviar: boolean;
+  criadoOffline?: boolean;
+  /** Usado pela sincronização em segundo plano: evita o redirect ao final. */
+  skipRedirect?: boolean;
 }
 
 export interface SalvarDespesaResult {
@@ -57,6 +60,7 @@ export async function salvarDespesa(input: SalvarDespesaInput): Promise<SalvarDe
     tipo: input.tipo,
     confirmado_colaborador: true,
     origem_ia: input.extracaoIa ?? null,
+    criado_offline: input.criadoOffline ?? false,
   };
 
   let despesaId = input.despesaId;
@@ -119,5 +123,10 @@ export async function salvarDespesa(input: SalvarDespesaInput): Promise<SalvarDe
   }
 
   revalidatePath("/app/minhas-despesas");
+
+  if (input.skipRedirect) {
+    return {};
+  }
+
   redirect("/app/minhas-despesas");
 }
