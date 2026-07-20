@@ -1,3 +1,23 @@
+import {
+  DEFINICOES,
+  OBJETIVO,
+  PAPEIS,
+  PROCEDIMENTO_OPERACIONAL,
+} from "@/lib/manual/conteudo-manual";
+
+// Conteúdo do Manual de Procedimentos (COM-PROC-001) reaproveitado aqui como
+// base de busca do chat — é a "busca inteligente no manual" pedida pro item 7,
+// sem precisar de uma página de busca separada. Só entra no prompt quando o
+// usuário está autenticado (ver montarSystemPrompt em /api/chat), já que o
+// manual é interno da Consuldata, não conteúdo pra visitante da landing.
+export const MANUAL_COMPLETO = [
+  OBJETIVO,
+  ...DEFINICOES.map((d) => `${d.titulo}: ${d.texto}`),
+  ...PAPEIS.map((p) => `${p.papel}: ${p.texto}`),
+  ...PROCEDIMENTO_OPERACIONAL.map((p) => `${p.titulo}: ${p.texto}`),
+  'O manual completo em PDF (COM-PROC-001) pode ser baixado pelo link "Manual do sistema" no menu lateral.',
+].join("\n\n");
+
 export const SOBRE_O_PRODUTO = `
 Comprovai é um sistema de lançamento, aprovação e reembolso de despesas corporativas,
 com geração automática de nota de débito para repasse de custo a clientes. É feito para

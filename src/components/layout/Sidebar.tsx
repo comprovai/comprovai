@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
+import { FileText, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -55,15 +55,26 @@ function SidebarContent({
         </nav>
       </div>
 
-      <form action={onSignOut} className="border-t border-white/10 p-5">
-        <button
-          type="submit"
-          className="flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
+      <div className="border-t border-white/10 p-5">
+        <a
+          href="/api/manual"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3 flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
         >
-          <LogOut size={16} strokeWidth={1.5} />
-          Sair
-        </button>
-      </form>
+          <FileText size={16} strokeWidth={1.5} />
+          Manual do sistema
+        </a>
+        <form action={onSignOut}>
+          <button
+            type="submit"
+            className="flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
+          >
+            <LogOut size={16} strokeWidth={1.5} />
+            Sair
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

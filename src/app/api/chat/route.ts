@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import {
   DICAS_POR_ROLE,
+  MANUAL_COMPLETO,
   PERGUNTAS_FREQUENTES,
   SOBRE_O_PRODUTO,
 } from "@/lib/chat/conteudo-ajuda";
@@ -57,6 +58,10 @@ function montarSystemPrompt(role?: string | null, pagina?: string | null): strin
 
   if (role && DICAS_POR_ROLE[role]) {
     partes.push("", DICAS_POR_ROLE[role]);
+  }
+
+  if (role) {
+    partes.push("", "Manual de Procedimentos do Sistema Comprovai (COM-PROC-001):", MANUAL_COMPLETO);
   }
 
   if (pagina) {

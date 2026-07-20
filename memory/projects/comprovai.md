@@ -169,7 +169,18 @@ Pendência da Fase 4 finalmente resolvida: modal Sim/Não do design system (nunc
 - **Tabela `leads` nova** (migration `0010_criar_tabela_leads.sql`): `nome`/`email`/`empresa`/`telefone`/`mensagem`/`criado_em`. RLS com `insert` público (`anon`+`authenticated`, `with check (true)`) e **sem policy de select** — visitante grava, ninguém lê pelo client, só via SQL direto/service_role. `SolicitarAcessoForm.tsx` (client) + `solicitarAcesso` action em `src/app/actions.ts` (novo arquivo, root do App Router — só existia `src/app/app/actions.ts` até então, que é do route group `/app`, coisa diferente).
 - Testado ponta a ponta: form grava no banco (confirmado via SQL, lead de teste depois removido), `sitemap.xml`/`robots.txt` respondem certo, sem overflow horizontal no mobile.
 
-**Pendências que ficaram documentadas no [[TASKS]]** pra próxima sessão: item 6a (Termos/LGPD) precisa de revisão de advogado antes de valer como documento real; item 7 (manual SGI da Consuldata) já tem código definido (`COM-PROC-001`, seguindo o padrão `SUP-PROC-001` que a Consuldata já usa) — falta só escrever o conteúdo.
+**Pendências que ficaram documentadas no [[TASKS]]** pra próxima sessão: item 6a (Termos/LGPD) precisa de revisão de advogado antes de valer como documento real.
+
+## Manual de Procedimentos COM-PROC-001 (2026-07-20, item 7)
+Li o modelo real (`SUP-PROC-001`, Suprimentos, fornecido pelo usuário) pra replicar o padrão SGI da Consuldata: cabeçalho com código/versão/data, bloco Elaborado/Verificado/Aprovado Por, vigência, histórico de revisões, sumário fixo (Objetivo/Escopo/Definições/Papéis/Procedimento Operacional/Disposições Finais).
+
+- **Conteúdo centralizado em `src/lib/manual/conteudo-manual.ts`** (`MANUAL_META` + textos) — usado tanto pelo PDF quanto pelo chat, sem duplicar.
+- **`ManualDocument.tsx`** segue o mesmo estilo visual dos outros PDFs (`NotaDebitoDocument.tsx`: navy `#212771`, Helvetica, rodapé fixo com código/versão/data).
+- **`/api/manual`** (GET, exige login, qualquer role) renderiza sob demanda via `renderToBuffer` — mesmo padrão da Nota de Débito. Sem numeração sequencial (não é um documento transacional por cliente, é um manual único da empresa).
+- **Cadeia de assinatura decidida por mim** (sinalizado no [[TASKS]] pra confirmação): Elaborado Por Junior Lopes, Verificado Por Laryssa Victoria (mesma verificadora do SUP-PROC-001), Aprovado Por Igor Monin Tenório Magalhães (mesmo aprovador) — não inventei nomes novos, usei a cadeia que já existe pra esse tipo de documento na Consuldata.
+- **Decisão consciente:** a seção "Responsáveis e Aprovadores com e-mails" do modelo original NÃO virou uma lista estática de nomes/e-mails no manual do Comprovai — isso vive em Admin > Usuários (dado dinâmico) e ficaria desatualizado no PDF estático. O manual só referencia isso em Disposições Finais.
+- **"Busca inteligente no manual"** (exigência literal do item 7) resolvida sem construir nada novo: o mesmo `MANUAL_COMPLETO` (de `conteudo-manual.ts`, reexportado por `src/lib/chat/conteudo-ajuda.ts`) entra no system prompt de `/api/chat` só quando `role` está presente (usuário autenticado) — o manual é interno da Consuldata, não aparece pro chat público da landing. Testado: perguntei o código do documento e onde baixar, respondeu certo (`COM-PROC-001`, link "Manual do sistema" na sidebar).
+- Link "Manual do sistema" adicionado na `Sidebar.tsx`, visível pra todas as roles (fora do `navItems` por role).
 
 ## Chat inteligente — FAQ + chatbot contextual (2026-07-20, itens 5+6b)
 Construído junto (mesma infra) logo depois da landing page, como planejado.
