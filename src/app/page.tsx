@@ -86,8 +86,16 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="px-6 py-6 text-center text-xs text-text-subtle sm:px-12">
-        Comprovai
+      <footer className="flex flex-col items-center gap-2 px-6 py-6 text-center text-xs text-text-subtle sm:px-12">
+        <div className="flex gap-4">
+          <Link href="/termos" className="hover:text-text-default hover:underline">
+            Termos de Uso
+          </Link>
+          <Link href="/privacidade" className="hover:text-text-default hover:underline">
+            Política de Privacidade
+          </Link>
+        </div>
+        <span>Comprovai</span>
       </footer>
 
       <ChatWidget />
