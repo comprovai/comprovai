@@ -15,7 +15,7 @@ export const MANUAL_COMPLETO = [
   ...DEFINICOES.map((d) => `${d.titulo}: ${d.texto}`),
   ...PAPEIS.map((p) => `${p.papel}: ${p.texto}`),
   ...PROCEDIMENTO_OPERACIONAL.map((p) => `${p.titulo}: ${p.texto}`),
-  'O manual completo em PDF (COM-PROC-001) pode ser baixado pelo link "Manual do sistema" no menu lateral.',
+  'O manual completo (COM-PROC-001, padrão SGI) pode ser consultado pelo link "Manual do sistema" no menu lateral.',
 ].join("\n\n");
 
 export const SOBRE_O_PRODUTO = `

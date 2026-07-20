@@ -57,7 +57,7 @@ function SidebarContent({
 
       <div className="border-t border-white/10 p-5">
         <a
-          href="/api/manual"
+          href="/manual"
           target="_blank"
           rel="noopener noreferrer"
           className="mb-3 flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
