@@ -27,6 +27,34 @@ export interface SalvarDespesaResult {
   error?: string;
 }
 
+export interface ExcluirDespesaResult {
+  error?: string;
+}
+
+export async function excluirDespesa(despesaId: string): Promise<ExcluirDespesaResult> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  // RLS (despesas_delete_colaborador) só permite excluir despesa própria em
+  // rascunho/enviada; qualquer outro status falha aqui, não antes.
+  const { error } = await supabase.from("despesas").delete().eq("id", despesaId);
+
+  if (error) {
+    return { error: "Não foi possível excluir a despesa." };
+  }
+
+  revalidatePath("/app/minhas-despesas");
+
+  return {};
+}
+
 export async function salvarDespesa(input: SalvarDespesaInput): Promise<SalvarDespesaResult> {
   const supabase = await createClient();
 

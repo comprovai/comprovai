@@ -531,6 +531,36 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          criado_em: string
+          email: string
+          empresa: string
+          id: string
+          mensagem: string | null
+          nome: string
+          telefone: string | null
+        }
+        Insert: {
+          criado_em?: string
+          email: string
+          empresa: string
+          id?: string
+          mensagem?: string | null
+          nome: string
+          telefone?: string | null
+        }
+        Update: {
+          criado_em?: string
+          email?: string
+          empresa?: string
+          id?: string
+          mensagem?: string | null
+          nome?: string
+          telefone?: string | null
+        }
+        Relationships: []
+      }
       projetos_propostas: {
         Row: {
           ativo: boolean

@@ -8,9 +8,35 @@ const openSans = Open_Sans({
   variable: "--font-open-sans",
 });
 
+const SITE_URL = "https://comprovai.vercel.app";
+const TITLE = "Comprovai — Despesas, aprovação e repasse ao cliente";
+const DESCRIPTION =
+  "Sistema de lançamento, aprovação e reembolso de despesas corporativas com nota de débito automática para repasse de custo ao cliente. Feito para empresas de serviço e consultoria.";
+
 export const metadata: Metadata = {
-  title: "Comprovai",
-  description: "Lançamento, aprovação e reembolso de despesas corporativas",
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  keywords: [
+    "nota de débito",
+    "reembolso de despesas",
+    "repasse de despesas ao cliente",
+    "gestão de despesas corporativas",
+    "sistema de reembolso para consultoria",
+  ],
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Comprovai",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

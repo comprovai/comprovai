@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { logout } from "./actions";
 
 const NAV_BY_ROLE: Record<string, { href: string; label: string }[]> = {
@@ -42,14 +43,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const navItems = usuario?.role ? (NAV_BY_ROLE[usuario.role] ?? []) : [];
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background md:flex-row">
       <Sidebar
         navItems={navItems}
         nome={usuario?.nome ?? ""}
         empresaNome={empresa?.nome ?? ""}
         onSignOut={logout}
       />
-      <main className="flex-1 p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
+      <ChatWidget role={usuario?.role} />
     </div>
   );
 }

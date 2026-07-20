@@ -152,3 +152,30 @@ Decisões do usuário: reset de senha via **e-mail embutido do Supabase** (sem S
 - `SincronizarPendentes` (montado em `/app/minhas-despesas`): ao detectar conexão, sobe cada pendência (foto + dados) e cria a despesa de verdade.
 - **Bug real encontrado e corrigido durante o teste:** o efeito de sincronização rodava em duplicidade (Strict Mode do React re-invoca efeitos em dev) e criava a MESMA despesa duas vezes no Supabase. Corrigido com um lock em nível de módulo (`sincronizacaoEmAndamento`, fora do componente — sobrevive à dupla invocação) + reivindicação do registro do Dexie (delete-then-process, com re-inserção em caso de falha) antes de processar.
 - Testado ponta a ponta de verdade (offline simulado via `Object.defineProperty(navigator, 'onLine', ...)` + eventos, já que a ferramenta de browser não tem toggle real de rede): criou despesa offline → confirmou no IndexedDB → voltou "online" → confirmou 1 único registro no Supabase (não duplicado, após o fix) → confirmou IndexedDB limpo depois da sincronização.
+
+## Exclusão de despesa + responsividade mobile (2026-07-20)
+Pendência da Fase 4 finalmente resolvida: modal Sim/Não do design system (nunca `window.confirm`) em `MinhasDespesasList.tsx`, botão de lixeira só aparece em `rascunho`/`enviada` (únicos status que a policy de DELETE permite — RLS quem decide, a action só delega). Testado ponta a ponta.
+
+**Responsividade mobile do `AppLayout`** (afeta todas as roles, não só colaborador): sidebar era `w-60` fixa dentro de um `flex` row sem colapso — no celular o conteúdo saía da tela e precisava de scroll horizontal. Corrigido em `Sidebar.tsx`: `hidden md:flex` na sidebar desktop, mais uma barra mobile (`md:hidden`) com botão hambúrguer que abre um drawer (`role="dialog"`, fecha ao clicar fora ou navegar). `AppLayout` virou `flex-col md:flex-row`. Confirmado via `document.body.scrollWidth === window.innerWidth` em 375px — pendência real, não só do colaborador.
+
+## Landing page — SEO, conversão e decisões de arquitetura (2026-07-20)
+**Decisões de arquitetura fechadas** (perguntas recorrentes do usuário sobre "multi-tenant"):
+- **Banco por cliente: não.** Modelo permanece compartilhado (schema único + RLS por `empresa_id`), que é o que já existe desde a Fase 2. Um banco físico por cliente só se justificaria por exigência contratual de isolamento físico — não é o caso hoje.
+- **Self-service de contratação (billing automatizado): adiado de propósito.** Com 1 piloto, automatizar cadastro+pagamento+provisionamento é gasto de engenharia sem retorno ainda. Resolvido por enquanto com captação de lead (abaixo) + provisionamento manual (como foi feito com a Consuldata), até ter 3-5 clientes pagantes.
+
+**O que foi construído:**
+- `layout.tsx`: metadata expandida (OpenGraph, Twitter card, keywords, `metadataBase`). `sitemap.ts` e `robots.ts` novos (rotas nativas do Next, geram `/sitemap.xml` e `/robots.txt`; `disallow: /app/` pra não indexar telas autenticadas).
+- `page.tsx`: seção de 4 diferenciais (nota de débito automática, sem cartão/Pix corporativo, aprovação com trilha, funciona offline) + CTA duplo ("Solicitar acesso" via anchor scroll + "Área do Cliente" pro login).
+- **Tabela `leads` nova** (migration `0010_criar_tabela_leads.sql`): `nome`/`email`/`empresa`/`telefone`/`mensagem`/`criado_em`. RLS com `insert` público (`anon`+`authenticated`, `with check (true)`) e **sem policy de select** — visitante grava, ninguém lê pelo client, só via SQL direto/service_role. `SolicitarAcessoForm.tsx` (client) + `solicitarAcesso` action em `src/app/actions.ts` (novo arquivo, root do App Router — só existia `src/app/app/actions.ts` até então, que é do route group `/app`, coisa diferente).
+- Testado ponta a ponta: form grava no banco (confirmado via SQL, lead de teste depois removido), `sitemap.xml`/`robots.txt` respondem certo, sem overflow horizontal no mobile.
+
+**Pendências que ficaram documentadas no [[TASKS]]** pra próxima sessão: item 6a (Termos/LGPD) precisa de revisão de advogado antes de valer como documento real; item 7 (manual SGI da Consuldata) já tem código definido (`COM-PROC-001`, seguindo o padrão `SUP-PROC-001` que a Consuldata já usa) — falta só escrever o conteúdo.
+
+## Chat inteligente — FAQ + chatbot contextual (2026-07-20, itens 5+6b)
+Construído junto (mesma infra) logo depois da landing page, como planejado.
+
+- **`src/lib/chat/conteudo-ajuda.ts`**: conteúdo do FAQ (Q&A sobre o produto) + dicas por role (`DICAS_POR_ROLE`), tudo hardcoded — não criei tabela/admin de FAQ ainda, não vale o custo com 1 cliente.
+- **`/api/chat`**: mesmo padrão de tool-use forçado da extração de comprovante (`@anthropic-ai/sdk`, `claude-sonnet-5`), mas com 2 tools e `tool_choice: {type: "any"}` (Claude escolhe qual usar, não fixo): `responder` (resposta normal) ou `sugerir_whatsapp` (quando detecta intenção de falar com humano — retorna texto + resumo pro wa.me). Prompt de sistema monta produto+FAQ+dica do role+tela atual.
+- **`ChatWidget.tsx`**: botão flutuante **`bottom-6 left-6`** (canto oposto ao FAB "+" de `/app/minhas-despesas`, que é `bottom-6 right-6` — de propósito, pra nunca colidir). Montado em dois lugares: `src/app/page.tsx` (landing pública, sem `role` — modo só-FAQ, item 5) e `src/app/app/layout.tsx` (toda tela autenticada, com `role` do usuário — item 6b). Contexto de tela vem de `usePathname()` dentro do próprio widget, não precisa passar prop por página.
+- **Handoff pro WhatsApp:** botão só renderiza se `NEXT_PUBLIC_WHATSAPP_NUMERO` estiver setada (env var nova, formato `55DDDNUMERO`) — **ainda não está configurada, é a única pendência ativa no [[TASKS]]**. Sem a env var, o chat funciona normal (detecção de intenção inclusive), só não mostra o botão — degradação graciosa, não quebra nada.
+- Testado ponta a ponta: pergunta de FAQ respondida certo (nota de débito) tanto na landing quanto dentro do app; pedido explícito de "falar com uma pessoa" corretamente disparou `sugerir_whatsapp`; contexto de role+tela confirmado (colaborador em `/app/minhas-despesas` recebeu resposta específica daquela tela); sem sobreposição com o FAB no mobile (375px, confirmado via bounding box).
