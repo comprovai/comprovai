@@ -40,11 +40,12 @@ export default function Home() {
 
       <section className="flex flex-col items-center px-6 py-16 text-center sm:px-12">
         <h1 className="max-w-2xl text-3xl font-bold leading-tight text-brand sm:text-4xl">
-          Despesas, aprovação e repasse ao cliente — sem parecer um SaaS genérico
+          Sua equipe reembolsada, seu cliente cobrado — sem planilha.
         </h1>
         <p className="mt-4 max-w-xl text-text-default">
-          Feito para empresas de serviço e consultoria que precisam repassar despesa de projeto
-          ao cliente via nota de débito — o fluxo que o expense management genérico não prioriza.
+          Colaborador fotografa o comprovante, o sistema aprova, reembolsa e já gera a nota de
+          débito pro cliente. Feito pra consultorias e prestadoras de serviço que ainda fazem
+          esse fluxo na mão, sem cartão corporativo.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a

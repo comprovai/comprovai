@@ -9,9 +9,9 @@ const openSans = Open_Sans({
 });
 
 const SITE_URL = "https://comprovai.vercel.app";
-const TITLE = "Comprovai — Despesas, aprovação e repasse ao cliente";
+const TITLE = "Comprovai — Reembolso de despesas e cobrança ao cliente, sem planilha";
 const DESCRIPTION =
-  "Sistema de lançamento, aprovação e reembolso de despesas corporativas com nota de débito automática para repasse de custo ao cliente. Feito para empresas de serviço e consultoria.";
+  "Colaborador fotografa o comprovante, o sistema aprova, reembolsa e já gera a nota de débito pro cliente. Feito pra consultorias e prestadoras de serviço que ainda fazem esse fluxo na mão.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
