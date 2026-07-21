@@ -26,46 +26,58 @@ não é um "expense management" genérico. Público-alvo: PMEs de 5-150 colabora
 cartão corporativo nem Pix corporativo, que dependem de reembolso e repasse.
 `.trim();
 
-export const PERGUNTAS_FREQUENTES = `
-P: Como eu lanço uma despesa?
-R: Em "Minhas despesas", toque no botão + (canto inferior). Fotografe o comprovante — a
-IA lê os dados automaticamente (valor, data, fornecedor) — confirme ou corrija os campos
-e escolha "Salvar rascunho" ou "Enviar para aprovação".
+export interface FaqItem {
+  pergunta: string;
+  resposta: string;
+}
 
-P: O que significa cada status de despesa?
-R: Rascunho (ainda não enviada), Enviada (aguardando aprovação do gestor), Aprovada
-(aprovada, não pode mais ser editada), Reprovada (o gestor pediu correção — o colaborador
-pode editar e reenviar), Em financeiro (aprovada, aguardando conferência), Lançada
-(reembolso já processado), Nota gerada (virou nota de débito ou recibo assinado).
+// Fonte única do FAQ: alimenta a página visível (/faq), os chips de sugestão
+// do chat, e o prompt do chat (PERGUNTAS_FREQUENTES, abaixo).
+export const FAQ_ITEMS: FaqItem[] = [
+  {
+    pergunta: "Como eu lanço uma despesa?",
+    resposta:
+      'Em "Minhas despesas", toque no botão + (canto inferior). Fotografe o comprovante — a IA lê os dados automaticamente (valor, data, fornecedor) — confirme ou corrija os campos e escolha "Salvar rascunho" ou "Enviar para aprovação".',
+  },
+  {
+    pergunta: "O que significa cada status de despesa?",
+    resposta:
+      "Rascunho (ainda não enviada), Enviada (aguardando aprovação do gestor), Aprovada (não pode mais ser editada), Reprovada (o gestor pediu correção — o colaborador pode editar e reenviar), Em financeiro (aprovada, aguardando conferência), Lançada (reembolso já processado), Nota gerada (virou nota de débito ou recibo assinado).",
+  },
+  {
+    pergunta: "Posso lançar despesa sem internet?",
+    resposta:
+      "Sim. Sem conexão, o app avisa que está offline, você preenche os dados manualmente (sem a leitura automática por IA) e a despesa fica salva no aparelho. Quando a conexão voltar, ela sincroniza sozinha.",
+  },
+  {
+    pergunta: "Como funciona a aprovação?",
+    resposta:
+      'O gestor vê as despesas dos colaboradores que ele gerencia em "Aprovações", pode aprovar ou reprovar (reprovação exige motivo). Despesa aprovada não pode mais ser alterada por ninguém, nem financeiro nem admin — é definitivo.',
+  },
+  {
+    pergunta: "O que é a Nota de Débito?",
+    resposta:
+      "É o documento que o financeiro gera para repassar o custo das despesas aprovadas ao cliente do projeto, com um PDF contendo todos os comprovantes anexados e numeração sequencial oficial.",
+  },
+  {
+    pergunta: "O que é o Recibo de Reembolso?",
+    resposta:
+      'É o comprovante formal de que o colaborador foi reembolsado. O financeiro gera o recibo, e o colaborador assina digitalmente (desenhando a assinatura na tela) em "Recibos" antes do PDF final ser gerado.',
+  },
+  {
+    pergunta: "Esqueci minha senha, e agora?",
+    resposta: 'Na tela de login, clique em "Esqueci minha senha" e siga o link enviado por e-mail.',
+  },
+  {
+    pergunta: "Como excluo uma despesa?",
+    resposta:
+      'Só é possível excluir despesas em rascunho ou enviada (ainda não decididas). O botão de lixeira aparece na lista "Minhas despesas" para essas despesas, com confirmação antes de excluir de verdade.',
+  },
+];
 
-P: Posso lançar despesa sem internet?
-R: Sim. Sem conexão, o app avisa que está offline, você preenche os dados manualmente
-(sem a leitura automática por IA) e a despesa fica salva no aparelho. Quando a conexão
-voltar, ela sincroniza sozinha.
-
-P: Como funciona a aprovação?
-R: O gestor vê as despesas dos colaboradores que ele gerencia em "Aprovações", pode
-aprovar ou reprovar (reprovação exige motivo). Despesa aprovada não pode mais ser
-alterada por ninguém, nem financeiro nem admin — é definitivo.
-
-P: O que é a Nota de Débito?
-R: É o documento que o financeiro gera para repassar o custo das despesas aprovadas ao
-cliente do projeto, com um PDF contendo todos os comprovantes anexados e numeração
-sequencial oficial.
-
-P: O que é o Recibo de Reembolso?
-R: É o comprovante formal de que o colaborador foi reembolsado. O financeiro gera o
-recibo, e o colaborador assina digitalmente (desenhando a assinatura na tela) em
-"Recibos" antes do PDF final ser gerado.
-
-P: Esqueci minha senha, e agora?
-R: Na tela de login, clique em "Esqueci minha senha" e siga o link enviado por e-mail.
-
-P: Como excluo uma despesa?
-R: Só é possível excluir despesas em rascunho ou enviada (ainda não decididas). O botão
-de lixeira aparece na lista "Minhas despesas" para essas despesas, com confirmação antes
-de excluir de verdade.
-`.trim();
+export const PERGUNTAS_FREQUENTES = FAQ_ITEMS.map(
+  (item) => `P: ${item.pergunta}\nR: ${item.resposta}`
+).join("\n\n");
 
 export const DICAS_POR_ROLE: Record<string, string> = {
   colaborador: `

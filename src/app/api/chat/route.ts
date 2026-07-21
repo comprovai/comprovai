@@ -1,5 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/types/database.types";
 import {
   DICAS_POR_ROLE,
   MANUAL_COMPLETO,
@@ -76,6 +78,43 @@ function montarSystemPrompt(role?: string | null, pagina?: string | null): strin
   return partes.join("\n");
 }
 
+// Grava todo pedido de atendimento humano em `atendimentos_humanos`, mesmo sem
+// integração real com WhatsApp Business API ainda — é a base de dados (contexto
+// completo da conversa) que uma futura ponte bidirecional vai precisar. Falha
+// de gravação não deve travar a resposta do chat pro usuário.
+async function registrarPedidoDeAtendimento(body: ChatRequestBody, resumo: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let empresaId: string | null = null;
+    let usuarioId: string | null = null;
+
+    if (user) {
+      const { data: usuario } = await supabase
+        .from("usuarios")
+        .select("empresa_id")
+        .eq("id", user.id)
+        .single();
+      empresaId = usuario?.empresa_id ?? null;
+      usuarioId = user.id;
+    }
+
+    await supabase.from("atendimentos_humanos").insert({
+      empresa_id: empresaId,
+      usuario_id: usuarioId,
+      origem: body.role ? "app" : "landing",
+      pagina: body.pagina ?? null,
+      resumo,
+      transcricao: body.mensagens as unknown as Json,
+    });
+  } catch {
+    // Log de suporte é best-effort — não deve derrubar a resposta do chat.
+  }
+}
+
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as ChatRequestBody;
 
@@ -108,6 +147,7 @@ export async function POST(request: NextRequest) {
 
   if (toolUse.name === "sugerir_whatsapp") {
     const input = toolUse.input as { texto: string; resumo: string };
+    await registrarPedidoDeAtendimento(body, input.resumo);
     return NextResponse.json({ texto: input.texto, whatsapp: input.resumo });
   }
 

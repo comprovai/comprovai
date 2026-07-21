@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LogOut, Menu, X } from "lucide-react";
+import { FileText, HelpCircle, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -64,6 +64,15 @@ function SidebarContent({
         >
           <FileText size={16} strokeWidth={1.5} />
           Manual do sistema
+        </a>
+        <a
+          href="/faq"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3 flex items-center gap-2 text-sm text-white/70 transition-colors hover:text-white"
+        >
+          <HelpCircle size={16} strokeWidth={1.5} />
+          Perguntas frequentes
         </a>
         <form action={onSignOut}>
           <button

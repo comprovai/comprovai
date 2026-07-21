@@ -88,6 +88,9 @@ export default function Home() {
 
       <footer className="flex flex-col items-center gap-2 px-6 py-6 text-center text-xs text-text-subtle sm:px-12">
         <div className="flex gap-4">
+          <Link href="/faq" className="hover:text-text-default hover:underline">
+            Perguntas frequentes
+          </Link>
           <Link href="/termos" className="hover:text-text-default hover:underline">
             Termos de Uso
           </Link>

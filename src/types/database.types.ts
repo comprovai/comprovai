@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      atendimentos_humanos: {
+        Row: {
+          criado_em: string
+          empresa_id: string | null
+          id: string
+          origem: string
+          pagina: string | null
+          resumo: string
+          status: string
+          transcricao: Json
+          usuario_id: string | null
+        }
+        Insert: {
+          criado_em?: string
+          empresa_id?: string | null
+          id?: string
+          origem: string
+          pagina?: string | null
+          resumo: string
+          status?: string
+          transcricao: Json
+          usuario_id?: string | null
+        }
+        Update: {
+          criado_em?: string
+          empresa_id?: string | null
+          id?: string
+          origem?: string
+          pagina?: string | null
+          resumo?: string
+          status?: string
+          transcricao?: Json
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atendimentos_humanos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atendimentos_humanos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias_despesa: {
         Row: {
           empresa_id: string

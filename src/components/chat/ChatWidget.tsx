@@ -4,6 +4,9 @@ import { FormEvent, useState } from "react";
 import { usePathname } from "next/navigation";
 import { MessageCircle, X, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FAQ_ITEMS } from "@/lib/chat/conteudo-ajuda";
+
+const SUGESTOES = FAQ_ITEMS.slice(0, 4);
 
 interface Mensagem {
   role: "user" | "assistant";
@@ -24,9 +27,7 @@ export function ChatWidget({ role }: ChatWidgetProps) {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
 
-  async function enviar(e: FormEvent) {
-    e.preventDefault();
-    const texto = input.trim();
+  async function enviarTexto(texto: string) {
     if (!texto || pending) return;
 
     const historico = [...mensagens, { role: "user" as const, texto }];
@@ -59,6 +60,11 @@ export function ChatWidget({ role }: ChatWidgetProps) {
     }
   }
 
+  function enviarFormulario(e: FormEvent) {
+    e.preventDefault();
+    enviarTexto(input.trim());
+  }
+
   return (
     <>
       <button
@@ -78,10 +84,24 @@ export function ChatWidget({ role }: ChatWidgetProps) {
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {mensagens.length === 0 && (
-              <p className="text-sm text-text-subtle">
-                Pergunta alguma coisa sobre como usar o Comprovai — lançamento, aprovação,
-                nota de débito, o que for.
-              </p>
+              <div>
+                <p className="text-sm text-text-subtle">
+                  Pergunta alguma coisa sobre como usar o Comprovai — lançamento, aprovação,
+                  nota de débito, o que for.
+                </p>
+                <div className="mt-3 flex flex-col gap-2">
+                  {SUGESTOES.map((item) => (
+                    <button
+                      key={item.pergunta}
+                      type="button"
+                      onClick={() => enviarTexto(item.pergunta)}
+                      className="rounded border border-border-default bg-background px-3 py-2 text-left text-xs text-text-default hover:border-brand"
+                    >
+                      {item.pergunta}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
             {mensagens.map((m, i) => (
               <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
@@ -108,7 +128,7 @@ export function ChatWidget({ role }: ChatWidgetProps) {
             {pending && <p className="text-sm text-text-subtle">Digitando...</p>}
           </div>
 
-          <form onSubmit={enviar} className="flex gap-2 border-t border-border-default p-3">
+          <form onSubmit={enviarFormulario} className="flex gap-2 border-t border-border-default p-3">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
